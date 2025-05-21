@@ -19,23 +19,23 @@ The repository is organized around a series of logical feature branches that bui
 
 The core table is `DailyDigest`, which stores both English and Mandarin episode data:
 
-| Field            | Type   | Notes                            |
-| ---------------- | ------ | -------------------------------- |
-| `id`             | UUID   | Primary key                      |
-| `date`           | Date   | One entry per day                |
-| `title_en`       | String | Generated English headline       |
-| `title_zh`       | String | Translated Mandarin headline     |
-| `description_en` | Text   | SEO-friendly summary             |
-| `description_zh` | Text   | Mandarin summary                 |
-| `keywords_en`    | String | Comma-separated keywords         |
-| `keywords_zh`    | String | Comma-separated keywords         |
-| `summary_text_en`| Text   | Full English script              |
-| `summary_text_zh`| Text   | Full Mandarin script             |
-| `audio_url_en`   | URL    | Link to English audio file       |
-| `audio_url_zh`   | URL    | Link to Mandarin audio file      |
-| `gpt_prompt`     | Text   | Input prompt for OpenAI          |
-| `gpt_response_raw`| JSON  | Raw OpenAI response              |
-| `created_at`     | DateTime | Timestamp of creation          |
+| Field              | Type     | Notes                        |
+| ------------------ | -------- | ---------------------------- |
+| `id`               | UUID     | Primary key                  |
+| `date`             | Date     | One entry per day            |
+| `title_en`         | String   | Generated English headline   |
+| `title_zh`         | String   | Translated Mandarin headline |
+| `description_en`   | Text     | SEO-friendly summary         |
+| `description_zh`   | Text     | Mandarin summary             |
+| `keywords_en`      | String   | Comma-separated keywords     |
+| `keywords_zh`      | String   | Comma-separated keywords     |
+| `summary_text_en`  | Text     | Full English script          |
+| `summary_text_zh`  | Text     | Full Mandarin script         |
+| `audio_url_en`     | URL      | Link to English audio file   |
+| `audio_url_zh`     | URL      | Link to Mandarin audio file  |
+| `llm_prompt`       | Text     | Input prompt for LLM         |
+| `llm_response_raw` | JSON     | Raw LLM response             |
+| `created_at`       | DateTime | Timestamp of creation        |
 
 Static show-wide metadata is stored in `podcast.json` and `podcast.zh.json`. These files provide information such as the podcast title, author, description, language, artwork URL, and more.
 
@@ -65,3 +65,27 @@ The GitHub Actions workflow expects the following secrets:
 - [ ] GitHub Action runs daily and logs output
 - [ ] All fields in `DailyDigest` are saved for each language
 
+## API Endpoints
+
+All endpoints are prefixed with `/api/`.
+
+### DailyDigest CRUD
+
+- `GET    /api/digests/` — List all digests
+- `POST   /api/digests/` — Create a new digest
+- `GET    /api/digests/{id}/` — Retrieve a digest by UUID
+- `PUT    /api/digests/{id}/` — Update a digest
+- `PATCH  /api/digests/{id}/` — Partial update
+- `DELETE /api/digests/{id}/` — Delete a digest
+
+### Text-to-Speech (TTS)
+
+- `POST /api/tts/`
+  - Request: `{ "text": "...", "lang": "en", "voice": "default" }`
+  - Response: `{ "audio_url": "..." }`
+
+### Publish Audio & Metadata to RSS
+
+- `POST /api/publish/`
+  - Request: `{ "audio_url": "...", "title": "...", "description": "...", "date": "YYYY-MM-DD", "lang": "en", "keywords": "...", "transcript_url": "..." }`
+  - Response: `{ "rss_url": "...", "status": "published" }`
