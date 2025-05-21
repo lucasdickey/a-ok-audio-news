@@ -6,7 +6,7 @@ A-OK Audio News is a Django-based application that creates short AI-generated ne
 
 The repository is organized around a series of logical feature branches that build up the automation pipeline:
 
-1. **Initial Setup** – Django project creation, Neon database configuration, `DailyDigest` model definition, and loading static podcast metadata.
+1. **Initial Setup** – Django project creation, Supabase database configuration, `DailyDigest` model definition, and loading static podcast metadata.
 2. **OpenAI Summary** – Daily web-enabled prompt for news summarization stored in `summary_text_en`.
 3. **Metadata Generation** – AI-generated titles, descriptions, and keywords for the English episode.
 4. **English Text-to-Speech** – ElevenLabs voice synthesis for the English script, uploaded to Vercel Blob storage.
