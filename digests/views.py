@@ -13,6 +13,7 @@ import os
 import openai
 import base64
 import requests
+from .utils.vercel_blob import upload_bytes, BlobUploadError
 
 # Configure OpenAI once at import time
 openai.api_key = os.getenv("OPENAI_API_KEY", "")
@@ -64,13 +65,35 @@ class TTSView(APIView):
                 status=status.HTTP_502_BAD_GATEWAY,
             )
 
-        # Base64 encode so we can return inline (client can decode)
-        audio_b64 = base64.b64encode(audio_bytes).decode("ascii")
+        # Upload to Vercel Blob
+        try:
+            audio_url = upload_bytes(audio_bytes)
+        except BlobUploadError as exc:
+            return Response(
+                {"error": str(exc)},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+        # Update DailyDigest row if date provided
+        digest_id = None
+        target_date_str = request.data.get("date")
+        if target_date_str:
+            try:
+                from datetime import date as _d
+                target_date = _d.fromisoformat(target_date_str)
+                digest, _ = DailyDigest.objects.update_or_create(
+                    date=target_date,
+                    defaults={"audio_url_en": audio_url},
+                )
+                digest_id = str(digest.id)
+            except Exception:
+                pass
 
         return Response({
-            "audio_base64": audio_b64,
+            "audio_url": audio_url,
             "voice_id": voice_id,
             "lang": lang,
+            "digest_id": digest_id,
         }, status=status.HTTP_201_CREATED)
 
 class PublishView(APIView):
