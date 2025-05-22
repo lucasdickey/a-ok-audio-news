@@ -27,7 +27,7 @@ class TTSView(APIView):
         serializer.is_valid(raise_exception=True)
         text = serializer.validated_data["text"]
         lang = serializer.validated_data.get("lang", "en")
-        voice = serializer.validated_data.get("voice", "Rachel")  # default ElevenLabs voice
+        voice = serializer.validated_data.get("voice", "9DDKJLIKJqVKLbRZb3kO")  # default ElevenLabs voice
 
         eleven_api_key = os.getenv("ELEVEN_API_KEY")
         if not eleven_api_key:
