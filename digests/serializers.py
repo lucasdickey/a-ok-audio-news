@@ -9,7 +9,8 @@ class DailyDigestSerializer(serializers.ModelSerializer):
 class TTSSerializer(serializers.Serializer):
     text = serializers.CharField()
     lang = serializers.CharField(default='en')
-    voice = serializers.CharField(default='default')
+    # Default ElevenLabs voice ID (Rachel - accessible clone)
+    voice = serializers.CharField(default='9DDKJLIKJqVKLbRZb3kO')
 
 class PublishSerializer(serializers.Serializer):
     audio_url = serializers.URLField()
