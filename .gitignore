@@ -26,4 +26,31 @@ yarn-error.log*
 .idea/
 .vscode/
 *.swp
-*.swo 
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django
+*.log
+*.pot
+*.pyc
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Test outputs
+test_*.txt
+test_*.log
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+
+# OS
+Thumbs.db 
