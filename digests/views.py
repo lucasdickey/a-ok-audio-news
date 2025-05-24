@@ -98,7 +98,7 @@ class GenerateScriptView(APIView):
         - WHY it matters at large (implications for the field)
         - WHEN/WHERE details if material to the story
         
-        FORMAT: Begin with "Welcome to APE INTELLIGENCE DAILY, your host, A-OK Newsbot"
+        FORMAT: Begin with "Welcome to APE INTELLIGENCE DAILY, I'm your tireless researcher, astute analyst, and handsome host, A-OK"
         
         CITATION REQUIREMENTS: Include proper attributions like "as reported by The Information", "according to The Verge", etc.
         
