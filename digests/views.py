@@ -10,13 +10,19 @@ from .serializers import (
 )
 from datetime import date as dt_date
 import os
-import openai
+import anthropic
 import base64
 import requests
 from .utils.vercel_blob import upload_bytes, BlobUploadError
 
 # Configure OpenAI once at import time
-openai.api_key = os.getenv("OPENAI_API_KEY", "")
+# Import our multi-agent pipeline
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from agents_pipeline import generate_episode
+
+# Configure Anthropic once at import time
+anthropic_client = anthropic.Client(api_key=os.getenv("ANTHROPIC_API_KEY", ""))
 
 class DailyDigestViewSet(viewsets.ModelViewSet):
     queryset = DailyDigest.objects.all()
