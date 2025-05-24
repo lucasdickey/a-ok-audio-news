@@ -109,11 +109,34 @@ class GenerateScriptView(APIView):
         serializer.is_valid(raise_exception=True)
         target_date = serializer.validated_data.get('date', dt_date.today())
 
-        # Compose the LLM prompt for web-enabled news summary
+        # Compose the comprehensive LLM prompt for web-enabled news summary
         prompt = f"""
-        Summarize the most relevant and interesting AI news for {target_date}.
-        Use live web access to ensure the news is up-to-date and accurate.
-        Return a concise, engaging script suitable for a podcast.
+        Create a rich podcast script for APE INTELLIGENCE DAILY covering the most significant AI developments for {target_date}.
+        
+        AUDIENCE: AI practitioners (developers, researchers, business strategists, enterprise deployers) who actively follow AI news. 
+        No introductory fluff or basic explanations needed.
+        
+        STRUCTURE: 12 stories total, each 2-3 paragraphs covering:
+        - WHAT happened (the core development/announcement)
+        - WHY it matters at large (implications for the field)
+        - WHEN/WHERE details if material to the story
+        
+        FORMAT: Begin with "Welcome to APE INTELLIGENCE DAILY, I'm your tireless researcher, astute analyst, and handsome host, A-OK"
+        
+        CITATION REQUIREMENTS: Include proper attributions like "as reported by The Information", "according to The Verge", etc.
+        
+        PRIORITIZED SOURCES - Focus heavily on these outlets:
+        News: The Information, The Verge, TBNP, The Gradient, Import AI (Jack Clark), Papers with Code, Semafor, Wired, Axios, Bloomberg, TechCrunch, The AI Exchange (Nathan Benaich)
+        
+        Podcasts (transcripts when available): The AI Daily Brief, ThursdAI, Latent Space, AI & I, How I AI, Prac, Decoder with Nilay Patel, Hard Fork, The 20 Minute VC, This Day In AI Podcast, Machine Learning Street Talk, Lightcone Podcast, Practical AI, Generative Now, Dwarkesh Podcast, Financial Times/NYT/WSJ AI coverage
+        
+        Company Blogs (AI-focused): Anthropic, OpenAI, Cursor, Windsurf, Microsoft AI, Google AI/Labs/DeepMind, Meta, AWS, Hugging Face, Mistral, Cohere, Bolt, Lovable, v0/Vercel, Figma, Ethan Mollick's One Useful Thing, Noahpinion (Noah Smith), Groq
+        
+        Twitter Accounts: @rowancheung, @adcock_brett, @alexalbert__, @alexrkonrad, @sama, @DarioAmodei, @levie, @eriktorenberg, @paulg, @satyanadella, @reidhoffman, @nvidia
+        
+        EXCLUSIONS: Do NOT include news about Tesla, Twitter/X, SpaceX, Neuralink, or other Elon Musk companies.
+        
+        Use live web access to ensure accuracy and recency.
         """
 
         # Call OpenAI ChatCompletion with web browsing enabled
@@ -124,11 +147,12 @@ class GenerateScriptView(APIView):
                     {
                         "role": "system",
                         "content": (
-                            "You are an expert AI-news podcaster. "
-                            "Generate a concise yet engaging script (350-450 words) covering "
-                            f"the most relevant and interesting AI news for {target_date}. "
-                            "Use live web access / browsing to cite concrete facts; "
-                            "end with a one-sentence teaser for the next episode."
+                            "You are A-OK Newsbot, host of APE INTELLIGENCE DAILY. "
+                            "Generate a comprehensive podcast script covering the 12 most significant AI developments "
+                            f"for {target_date}. Each story should be 2-3 paragraphs covering what happened, why it matters, "
+                            "and relevant when/where details. Target AI practitioners - no beginner explanations needed. "
+                            "Include proper citations and focus on the specified high-quality sources. "
+                            "Exclude any Elon Musk company news. Use live web access for accuracy."
                         ),
                     }
                 ],
