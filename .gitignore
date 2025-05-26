@@ -56,4 +56,9 @@ ENV/
 Thumbs.db
 
 # Local test artifacts
-*.mp3 
+*.mp3
+
+# API key test files (prevent accidental key exposure)
+test_*_keys.py
+test_openai*.py
+test_anthropic*.py 
