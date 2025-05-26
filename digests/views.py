@@ -115,59 +115,24 @@ class GenerateScriptView(APIView):
         serializer.is_valid(raise_exception=True)
         target_date = serializer.validated_data.get('date', dt_date.today())
 
-        # Compose the comprehensive LLM prompt for web-enabled news summary
-        prompt = f"""
-        Create a rich podcast script for APE INTELLIGENCE DAILY covering the most significant AI developments for {target_date}.
-        
-        AUDIENCE: AI practitioners (developers, researchers, business strategists, enterprise deployers) who actively follow AI news. 
-        No introductory fluff or basic explanations needed.
-        
-        STRUCTURE: 12 stories total, each 2-3 paragraphs covering:
-        - WHAT happened (the core development/announcement)
-        - WHY it matters at large (implications for the field)
-        - WHEN/WHERE details if material to the story
-        
-        FORMAT: Begin with "Welcome to APE INTELLIGENCE DAILY, I'm your tireless researcher, astute analyst, and handsome host, A-OK"
-        
-        CITATION REQUIREMENTS: Include proper attributions like "as reported by The Information", "according to The Verge", etc.
-        
-        PRIORITIZED SOURCES - Focus heavily on these outlets:
-        News: The Information, The Verge, TBNP, The Gradient, Import AI (Jack Clark), Papers with Code, Semafor, Wired, Axios, Bloomberg, TechCrunch, The AI Exchange (Nathan Benaich)
-        
-        Podcasts (transcripts when available): The AI Daily Brief, ThursdAI, Latent Space, AI & I, How I AI, Prac, Decoder with Nilay Patel, Hard Fork, The 20 Minute VC, This Day In AI Podcast, Machine Learning Street Talk, Lightcone Podcast, Practical AI, Generative Now, Dwarkesh Podcast, Financial Times/NYT/WSJ AI coverage
-        
-        Company Blogs (AI-focused): Anthropic, OpenAI, Cursor, Windsurf, Microsoft AI, Google AI/Labs/DeepMind, Meta, AWS, Hugging Face, Mistral, Cohere, Bolt, Lovable, v0/Vercel, Figma, Ethan Mollick's One Useful Thing, Noahpinion (Noah Smith), Groq
-        
-        Twitter Accounts: @rowancheung, @adcock_brett, @alexalbert__, @alexrkonrad, @sama, @DarioAmodei, @levie, @eriktorenberg, @paulg, @satyanadella, @reidhoffman, @nvidia
-        
-        EXCLUSIONS: Do NOT include news about Tesla, Twitter/X, SpaceX, Neuralink, or other Elon Musk companies.
-        
-        Use live web access to ensure accuracy and recency.
-        """
+        # Using the agents_pipeline for script generation
+        prompt = f"Generated APE INTELLIGENCE DAILY script for {target_date} using multi-agent pipeline with web search capabilities."
 
-        # Call OpenAI ChatCompletion with web browsing enabled
+        # Use the existing Anthropic-based agents pipeline
         try:
-            completion = openai.ChatCompletion.create(
-                model="gpt-4o-mini",  # Browsing-capable model
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are A-OK Newsbot, host of APE INTELLIGENCE DAILY. "
-                            "Generate a comprehensive podcast script covering the 12 most significant AI developments "
-                            f"for {target_date}. Each story should be 2-3 paragraphs covering what happened, why it matters, "
-                            "and relevant when/where details. Target AI practitioners - no beginner explanations needed. "
-                            "Include proper citations and focus on the specified high-quality sources. "
-                            "Exclude any Elon Musk company news. Use live web access for accuracy."
-                        ),
-                    }
-                ],
-                temperature=0.7,
-                stream=False,
+            episode_result = generate_episode(
+                date_str=str(target_date),
+                with_editor=True,
+                human_review=False
             )
-
-            script_text = completion.choices[0].message["content"].strip()
-            llm_response = completion.to_dict_recursive()
+            
+            script_text = episode_result.get('script', '')
+            llm_response = {
+                "research": episode_result.get('research', ''),
+                "summary": episode_result.get('summary', ''),
+                "script": script_text,
+                "generated_via": "agents_pipeline"
+            }
         except Exception as exc:
             # Fallback: still return a stub so pipeline doesn't crash
             script_text = f"[LLM call failed: {exc}]"
