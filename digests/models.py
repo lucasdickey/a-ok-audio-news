@@ -15,6 +15,8 @@ class DailyDigest(models.Model):
     summary_text_zh = models.TextField(blank=True, null=True)
     audio_url_en = models.URLField(blank=True, null=True)
     audio_url_zh = models.URLField(blank=True, null=True)
+    audio_size_en = models.BigIntegerField(blank=True, null=True)  # File size in bytes
+    audio_size_zh = models.BigIntegerField(blank=True, null=True)  # File size in bytes
     llm_prompt = models.TextField()
     llm_response_raw = models.JSONField(blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)

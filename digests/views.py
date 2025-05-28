@@ -10,20 +10,11 @@ from .serializers import (
 )
 from datetime import date as dt_date
 import os
-<<<<<<< HEAD
-import openai
-import base64
-import requests
-
-# Configure OpenAI once at import time
-openai.api_key = os.getenv("OPENAI_API_KEY", "")
-=======
 import anthropic
 import base64
 import requests
 from .utils.vercel_blob import upload_bytes, BlobUploadError
 
-# Configure OpenAI once at import time
 # Import our multi-agent pipeline
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -31,7 +22,10 @@ from agents_pipeline import generate_episode
 
 # Configure Anthropic once at import time
 anthropic_client = anthropic.Client(api_key=os.getenv("ANTHROPIC_API_KEY", ""))
->>>>>>> publish-endpoint
+
+# Configure OpenAI as well, in case it's needed elsewhere or for future flexibility
+import openai
+openai.api_key = os.getenv("OPENAI_API_KEY", "")
 
 class DailyDigestViewSet(viewsets.ModelViewSet):
     queryset = DailyDigest.objects.all()
@@ -52,8 +46,6 @@ class TTSView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        # Map simple voice name to ElevenLabs voice_id if needed.
-        # For now we assume `voice` is a voice_id.
         voice_id = voice
 
         tts_endpoint = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
@@ -74,21 +66,13 @@ class TTSView(APIView):
             resp = requests.post(tts_endpoint, headers=headers, json=payload)
             resp.raise_for_status()
             audio_bytes = resp.content
+            audio_size = len(audio_bytes)
         except Exception as exc:
             return Response(
                 {"error": f"TTS generation failed: {exc}"},
                 status=status.HTTP_502_BAD_GATEWAY,
             )
 
-<<<<<<< HEAD
-        # Base64 encode so we can return inline (client can decode)
-        audio_b64 = base64.b64encode(audio_bytes).decode("ascii")
-
-        return Response({
-            "audio_base64": audio_b64,
-            "voice_id": voice_id,
-            "lang": lang,
-=======
         # Upload to Vercel Blob
         try:
             audio_url = upload_bytes(audio_bytes)
@@ -105,12 +89,22 @@ class TTSView(APIView):
             try:
                 from datetime import date as _d
                 target_date = _d.fromisoformat(target_date_str)
-                digest, _ = DailyDigest.objects.update_or_create(
-                    date=target_date,
-                    defaults={"audio_url_en": audio_url},
-                )
-                digest_id = str(digest.id)
-            except Exception:
+                
+                defaults_to_update = {}
+                if lang == 'en':
+                    defaults_to_update['audio_url_en'] = audio_url
+                    defaults_to_update['audio_size_en'] = audio_size
+                elif lang == 'zh':
+                    defaults_to_update['audio_url_zh'] = audio_url
+                    defaults_to_update['audio_size_zh'] = audio_size
+                
+                if defaults_to_update:
+                    digest, _ = DailyDigest.objects.update_or_create(
+                        date=target_date,
+                        defaults=defaults_to_update,
+                    )
+                    digest_id = str(digest.id)
+            except Exception as e:
                 pass
 
         return Response({
@@ -118,7 +112,7 @@ class TTSView(APIView):
             "voice_id": voice_id,
             "lang": lang,
             "digest_id": digest_id,
->>>>>>> publish-endpoint
+            "audio_size": audio_size
         }, status=status.HTTP_201_CREATED)
 
 class PublishView(APIView):
@@ -134,65 +128,9 @@ class GenerateScriptView(APIView):
         serializer.is_valid(raise_exception=True)
         target_date = serializer.validated_data.get('date', dt_date.today())
 
-<<<<<<< HEAD
-        # Compose the comprehensive LLM prompt for web-enabled news summary
-        prompt = f"""
-        Create a rich podcast script for APE INTELLIGENCE DAILY covering the most significant AI developments for {target_date}.
-        
-        AUDIENCE: AI practitioners (developers, researchers, business strategists, enterprise deployers) who actively follow AI news. 
-        No introductory fluff or basic explanations needed.
-        
-        STRUCTURE: 12 stories total, each 2-3 paragraphs covering:
-        - WHAT happened (the core development/announcement)
-        - WHY it matters at large (implications for the field)
-        - WHEN/WHERE details if material to the story
-        
-        FORMAT: Begin with "Welcome to APE INTELLIGENCE DAILY, I'm your tireless researcher, astute analyst, and handsome host, A-OK"
-        
-        CITATION REQUIREMENTS: Include proper attributions like "as reported by The Information", "according to The Verge", etc.
-        
-        PRIORITIZED SOURCES - Focus heavily on these outlets:
-        News: The Information, The Verge, TBNP, The Gradient, Import AI (Jack Clark), Papers with Code, Semafor, Wired, Axios, Bloomberg, TechCrunch, The AI Exchange (Nathan Benaich)
-        
-        Podcasts (transcripts when available): The AI Daily Brief, ThursdAI, Latent Space, AI & I, How I AI, Prac, Decoder with Nilay Patel, Hard Fork, The 20 Minute VC, This Day In AI Podcast, Machine Learning Street Talk, Lightcone Podcast, Practical AI, Generative Now, Dwarkesh Podcast, Financial Times/NYT/WSJ AI coverage
-        
-        Company Blogs (AI-focused): Anthropic, OpenAI, Cursor, Windsurf, Microsoft AI, Google AI/Labs/DeepMind, Meta, AWS, Hugging Face, Mistral, Cohere, Bolt, Lovable, v0/Vercel, Figma, Ethan Mollick's One Useful Thing, Noahpinion (Noah Smith), Groq
-        
-        Twitter Accounts: @rowancheung, @adcock_brett, @alexalbert__, @alexrkonrad, @sama, @DarioAmodei, @levie, @eriktorenberg, @paulg, @satyanadella, @reidhoffman, @nvidia
-        
-        EXCLUSIONS: Do NOT include news about Tesla, Twitter/X, SpaceX, Neuralink, or other Elon Musk companies.
-        
-        Use live web access to ensure accuracy and recency.
-        """
-
-        # Call OpenAI ChatCompletion with web browsing enabled
-        try:
-            completion = openai.ChatCompletion.create(
-                model="gpt-4o-mini",  # Browsing-capable model
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are A-OK Newsbot, host of APE INTELLIGENCE DAILY. "
-                            "Generate a comprehensive podcast script covering the 12 most significant AI developments "
-                            f"for {target_date}. Each story should be 2-3 paragraphs covering what happened, why it matters, "
-                            "and relevant when/where details. Target AI practitioners - no beginner explanations needed. "
-                            "Include proper citations and focus on the specified high-quality sources. "
-                            "Exclude any Elon Musk company news. Use live web access for accuracy."
-                        ),
-                    }
-                ],
-                temperature=0.7,
-                stream=False,
-            )
-
-            script_text = completion.choices[0].message["content"].strip()
-            llm_response = completion.to_dict_recursive()
-=======
         # Using the agents_pipeline for script generation
         prompt = f"Generated APE INTELLIGENCE DAILY script for {target_date} using multi-agent pipeline with web search capabilities."
 
-        # Use the existing Anthropic-based agents pipeline
         try:
             episode_result = generate_episode(
                 date_str=str(target_date),
@@ -205,13 +143,13 @@ class GenerateScriptView(APIView):
                 "research": episode_result.get('research', ''),
                 "summary": episode_result.get('summary', ''),
                 "script": script_text,
+                "raw_llm_output": episode_result.get('raw_llm_output'),
                 "generated_via": "agents_pipeline"
             }
->>>>>>> publish-endpoint
+
         except Exception as exc:
-            # Fallback: still return a stub so pipeline doesn't crash
             script_text = f"[LLM call failed: {exc}]"
-            llm_response = {"error": str(exc)}
+            llm_response = {"error": str(exc), "generated_via": "agents_pipeline_failed"}
 
         # Save or update the DailyDigest entry
         digest, created = DailyDigest.objects.update_or_create(

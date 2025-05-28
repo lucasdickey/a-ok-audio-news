@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',  # Django REST Framework
     'digests',  # Add the digests app
+    'feed_generator', # Add the feed_generator app
 ]
 
 MIDDLEWARE = [

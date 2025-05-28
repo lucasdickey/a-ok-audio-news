@@ -48,6 +48,40 @@ Static show-wide metadata is stored in `podcast.json` and `podcast.zh.json`. The
 /transcripts/zh/YYYY/MM/DD/script.txt
 ```
 
+## Development Setup
+
+1.  **Clone the repository:**
+    ```bash
+    git clone <repository-url>
+    cd a-ok-audio-news
+    ```
+2.  **Create and activate a virtual environment:**
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
+    _(On Windows, use `venv\Scripts\activate`)_
+3.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+    _(Ensure you have a `requirements.txt` file. If not, you can generate one after installing dependencies manually: `pip freeze > requirements.txt`)_
+4.  **Set up environment variables:**
+    Create a `.env.local` file in the project root and add your API keys and database URL. See the "Required Secrets" section for the necessary variables.
+    Example `.env.local`:
+    ```
+    OPENAI_API_KEY="sk-..."
+    ELEVEN_API_KEY="..."
+    DATABASE_URL="postgresql://user:password@host:port/dbname"
+    VERCEL_BLOB_TOKEN="..."
+    ANTHROPIC_API_KEY="sk-..."
+    ```
+5.  **Run database migrations:**
+    ```bash
+    venv/bin/python manage.py makemigrations
+    venv/bin/python manage.py migrate
+    ```
+
 ## Required Secrets
 
 The GitHub Actions workflow expects the following secrets:
@@ -59,8 +93,8 @@ The GitHub Actions workflow expects the following secrets:
 
 ## Completion Checklist
 
-- [ ] `podcast.json` and `podcast.zh.json` exist
-- [ ] Valid `/rss.xml` and `/rss-zh.xml` feeds are generated
+- [x] `podcast.json` and `podcast.zh.json` exist
+- [x] Valid `/rss.xml` and `/rss-zh.xml` feeds are generated
 - [ ] Audio and transcripts uploaded to Vercel Blob
 - [ ] GitHub Action runs daily and logs output
 - [ ] All fields in `DailyDigest` are saved for each language
@@ -89,3 +123,13 @@ All endpoints are prefixed with `/api/`.
 - `POST /api/publish/`
   - Request: `{ "audio_url": "...", "title": "...", "description": "...", "date": "YYYY-MM-DD", "lang": "en", "keywords": "...", "transcript_url": "..." }`
   - Response: `{ "rss_url": "...", "status": "published" }`
+
+## Running Tests
+
+To run the available tests for the Django application (e.g., for the `digests` app):
+
+```bash
+venv/bin/python manage.py test digests
+```
+
+Make sure your virtual environment is activated and your database is configured correctly, as tests might interact with the database.
