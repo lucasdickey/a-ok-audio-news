@@ -169,7 +169,7 @@ Structure includes:
 
 ## ✅ Completion Checklist
 
-- [ ] Podcast metadata files exist: `podcast.json`, `podcast.zh.json`
+- [x] Podcast metadata files exist: `podcast.json`, `podcast.zh.json`
 - [ ] `/rss.xml` and `/rss-zh.xml` serve valid podcast feeds
 - [ ] Audio + transcripts uploaded to Vercel Blob
 - [ ] GitHub Action runs daily and logs output
