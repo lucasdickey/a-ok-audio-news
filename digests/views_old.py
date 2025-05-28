@@ -10,14 +10,6 @@ from .serializers import (
 )
 from datetime import date as dt_date
 import os
-<<<<<<< HEAD
-import openai
-import base64
-import requests
-
-# Configure OpenAI once at import time
-openai.api_key = os.getenv("OPENAI_API_KEY", "")
-=======
 import anthropic
 import base64
 import requests
@@ -31,7 +23,6 @@ from agents_pipeline import generate_episode
 
 # Configure Anthropic once at import time
 anthropic_client = anthropic.Client(api_key=os.getenv("ANTHROPIC_API_KEY", ""))
->>>>>>> publish-endpoint
 
 class DailyDigestViewSet(viewsets.ModelViewSet):
     queryset = DailyDigest.objects.all()
@@ -80,15 +71,6 @@ class TTSView(APIView):
                 status=status.HTTP_502_BAD_GATEWAY,
             )
 
-<<<<<<< HEAD
-        # Base64 encode so we can return inline (client can decode)
-        audio_b64 = base64.b64encode(audio_bytes).decode("ascii")
-
-        return Response({
-            "audio_base64": audio_b64,
-            "voice_id": voice_id,
-            "lang": lang,
-=======
         # Upload to Vercel Blob
         try:
             audio_url = upload_bytes(audio_bytes)
@@ -118,7 +100,6 @@ class TTSView(APIView):
             "voice_id": voice_id,
             "lang": lang,
             "digest_id": digest_id,
->>>>>>> publish-endpoint
         }, status=status.HTTP_201_CREATED)
 
 class PublishView(APIView):
@@ -134,7 +115,6 @@ class GenerateScriptView(APIView):
         serializer.is_valid(raise_exception=True)
         target_date = serializer.validated_data.get('date', dt_date.today())
 
-<<<<<<< HEAD
         # Compose the comprehensive LLM prompt for web-enabled news summary
         prompt = f"""
         Create a rich podcast script for APE INTELLIGENCE DAILY covering the most significant AI developments for {target_date}.
@@ -188,26 +168,6 @@ class GenerateScriptView(APIView):
 
             script_text = completion.choices[0].message["content"].strip()
             llm_response = completion.to_dict_recursive()
-=======
-        # Using the agents_pipeline for script generation
-        prompt = f"Generated APE INTELLIGENCE DAILY script for {target_date} using multi-agent pipeline with web search capabilities."
-
-        # Use the existing Anthropic-based agents pipeline
-        try:
-            episode_result = generate_episode(
-                date_str=str(target_date),
-                with_editor=True,
-                human_review=False
-            )
-            
-            script_text = episode_result.get('script', '')
-            llm_response = {
-                "research": episode_result.get('research', ''),
-                "summary": episode_result.get('summary', ''),
-                "script": script_text,
-                "generated_via": "agents_pipeline"
-            }
->>>>>>> publish-endpoint
         except Exception as exc:
             # Fallback: still return a stub so pipeline doesn't crash
             script_text = f"[LLM call failed: {exc}]"

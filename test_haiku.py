@@ -1,0 +1,1 @@
+import anthropic, os; client = anthropic.Client(); response = client.messages.create(model='claude-3-haiku-20240307', max_tokens=5, messages=[{'role': 'user', 'content': 'Hi'}]); print('✅ Success!', response.content[0].text)

@@ -26,7 +26,11 @@ yarn-error.log*
 .idea/
 .vscode/
 *.swp
+<<<<<<< HEAD
 *.swo
+=======
+*.swo 
+>>>>>>> publish-endpoint
 
 # Python
 __pycache__/
@@ -56,4 +60,13 @@ ENV/
 Thumbs.db
 
 # Local test artifacts
+<<<<<<< HEAD
 *.mp3 
+=======
+*.mp3
+
+# API key test files (prevent accidental key exposure)
+test_*_keys.py
+test_openai*.py
+test_anthropic*.py 
+>>>>>>> publish-endpoint
